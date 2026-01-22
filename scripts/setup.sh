@@ -58,10 +58,13 @@ npm run build
 # Create data directory for SQLite (persistent)
 mkdir -p data
 
+# Get server's public IP for ORIGIN
+SERVER_IP=$(curl -s ifconfig.me)
+
 # Setup PM2
 echo "🚀 Starting with PM2..."
 pm2 delete linguaquest 2>/dev/null || true
-PORT=$PORT pm2 start build/index.js --name linguaquest
+ORIGIN=http://$SERVER_IP:$PORT PORT=$PORT pm2 start build/index.js --name linguaquest
 
 # Save PM2 config and setup startup
 pm2 save
