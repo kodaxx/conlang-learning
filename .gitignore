@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Build output
+build/
+.svelte-kit/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Database
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Test coverage
+coverage/
+
+# Misc
+*.local
+.vercel
+.netlify
