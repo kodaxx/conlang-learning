@@ -26,6 +26,7 @@ export const actions = {
             path: '/',
             httpOnly: true,
             sameSite: 'lax',
+            secure: false,
             maxAge: getSessionMaxAge()
         });
 
@@ -57,6 +58,7 @@ export const actions = {
             path: '/',
             httpOnly: true,
             sameSite: 'lax',
+            secure: false,
             maxAge: getSessionMaxAge()
         });
 

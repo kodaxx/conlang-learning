@@ -138,6 +138,15 @@ db.exec(`
 		FOREIGN KEY (card_id) REFERENCES srs_cards(id) ON DELETE CASCADE
 	);
 
+	-- Sessions table for persistent login
+	CREATE TABLE IF NOT EXISTS sessions (
+		id TEXT PRIMARY KEY,
+		user_id INTEGER NOT NULL,
+		expires_at TEXT NOT NULL,
+		created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+	);
+
 	-- Create default guest user for backwards compatibility
 	INSERT OR IGNORE INTO users (id, username, password_hash) VALUES (1, 'guest', 'guest');
 	INSERT OR IGNORE INTO user_stats (user_id) VALUES (1);

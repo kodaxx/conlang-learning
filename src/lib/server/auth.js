@@ -91,45 +91,44 @@ export function getUserById(userId) {
 }
 
 // ============================================
-// Session Management (simple cookie-based)
+// Session Management (database-backed)
 // ============================================
 
-// Session secret (in production, use environment variable)
 const SESSION_COOKIE_NAME = 'linguaquest_session';
 const SESSION_MAX_AGE = 30 * 24 * 60 * 60; // 30 days in seconds
 
-// Simple in-memory session store (for development)
-// In production, use Redis or database sessions
-const sessions = new Map();
-
 export function createSession(userId) {
     const sessionId = crypto.randomUUID();
-    const expires = new Date(Date.now() + SESSION_MAX_AGE * 1000);
+    const expiresAt = new Date(Date.now() + SESSION_MAX_AGE * 1000).toISOString();
 
-    sessions.set(sessionId, {
-        userId,
-        expires
-    });
+    db.prepare(`
+        INSERT INTO sessions (id, user_id, expires_at)
+        VALUES (?, ?, ?)
+    `).run(sessionId, userId, expiresAt);
 
-    return { sessionId, expires };
+    return { sessionId, expires: new Date(expiresAt) };
 }
 
 export function validateSession(sessionId) {
     if (!sessionId) return null;
 
-    const session = sessions.get(sessionId);
+    const session = db.prepare(`
+        SELECT user_id, expires_at FROM sessions WHERE id = ?
+    `).get(sessionId);
+
     if (!session) return null;
 
-    if (new Date() > session.expires) {
-        sessions.delete(sessionId);
+    // Check if expired
+    if (new Date() > new Date(session.expires_at)) {
+        db.prepare('DELETE FROM sessions WHERE id = ?').run(sessionId);
         return null;
     }
 
-    return session.userId;
+    return session.user_id;
 }
 
 export function destroySession(sessionId) {
-    sessions.delete(sessionId);
+    db.prepare('DELETE FROM sessions WHERE id = ?').run(sessionId);
 }
 
 export function getSessionCookieName() {
@@ -139,3 +138,10 @@ export function getSessionCookieName() {
 export function getSessionMaxAge() {
     return SESSION_MAX_AGE;
 }
+
+// Clean up expired sessions periodically
+export function cleanupExpiredSessions() {
+    const now = new Date().toISOString();
+    db.prepare('DELETE FROM sessions WHERE expires_at < ?').run(now);
+}
+
