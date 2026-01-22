@@ -10,8 +10,8 @@ build/
 .env.*
 !.env.example
 
-# Database
-data/
+# Database (root level only)
+/data/
 *.db
 *.sqlite
 *.sqlite3
