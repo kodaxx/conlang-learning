@@ -1,16 +1,17 @@
 import Database from 'better-sqlite3';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const dbPath = join(__dirname, '../../../../data/linguaquest.db');
+// Use environment variable or default to ./data in the current working directory
+const dataDir = process.env.DATA_DIR || join(process.cwd(), 'data');
+const dbPath = join(dataDir, 'linguaquest.db');
 
 // Ensure data directory exists
-const dataDir = dirname(dbPath);
 if (!existsSync(dataDir)) {
 	mkdirSync(dataDir, { recursive: true });
 }
+
+console.log('Database path:', dbPath);
 
 const db = new Database(dbPath);
 db.pragma('journal_mode = WAL');
