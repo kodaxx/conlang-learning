@@ -1,4 +1,5 @@
 <script>
+    import globasaFlag from "$lib/assets/globasa_flag.svg";
     let { data } = $props();
 </script>
 
@@ -12,7 +13,9 @@
 
 <div class="home-container">
     <section class="hero">
-        <div class="hero-badge">🌐 Free Language Learning</div>
+        <div class="flag-container">
+            <img src={globasaFlag} alt="Globasa Flag" class="hero-flag" />
+        </div>
         <h1 class="hero-title">Learn Globasa</h1>
         <p class="hero-subtitle">
             A truly global language for international communication
@@ -48,7 +51,7 @@
                 </div>
             </div>
             <div class="stat-item">
-                <span class="stat-icon">�</span>
+                <span class="stat-icon">✅</span>
                 <div class="stat-info">
                     <span class="stat-number"
                         >{data.globasaProgress.completed}/{data.globasaProgress
@@ -74,7 +77,7 @@
             </div>
 
             <div class="about-card">
-                <div class="about-icon">�</div>
+                <div class="about-icon">🧩</div>
                 <h3>Easy to Learn</h3>
                 <p>
                     Simple, regular grammar with no conjugations, no gendered
@@ -107,30 +110,26 @@
         <h2 class="section-title">The Globasa Philosophy</h2>
         <div class="philosophy-content">
             <p>
-                Globasa was created by <strong
-                    >Hsjunxaji (Dr. Dana Edwards)</strong
-                > with the vision of a language that represents all humanity equally.
-                Unlike languages that favor European vocabulary or grammar, Globasa
-                draws from:
+                Globasa was created by <strong>Hector Ortega</strong> with the vision
+                of a language that represents all humanity equally. Unlike languages
+                that favor specific language families, Globasa draws from 17 major
+                world languages:
             </p>
             <ul class="philosophy-list">
                 <li>
-                    🌏 <strong>Asian languages</strong> — Mandarin, Japanese, Korean,
-                    Vietnamese
+                    🌏 <strong>East Asian & Austronesian</strong> — Mandarin, Japanese,
+                    Korean, Vietnamese, Indonesian, Filipino
                 </li>
                 <li>
-                    🌍 <strong>African languages</strong> — Swahili, Hausa, Yoruba
+                    🕌 <strong>Middle Eastern & South Asian</strong> — Arabic, Persian,
+                    Turkish, Hindi, Telugu
                 </li>
                 <li>
-                    🌎 <strong>American languages</strong> — Spanish influence, indigenous
-                    roots
+                    🌍 <strong>African</strong> — Swahili
                 </li>
                 <li>
-                    🌍 <strong>European languages</strong> — English, Romance, Germanic
-                </li>
-                <li>
-                    🌏 <strong>Middle Eastern languages</strong> — Arabic, Persian,
-                    Turkish
+                    🏰 <strong>European</strong> — English, French, German, Russian,
+                    Spanish
                 </li>
             </ul>
             <p>
@@ -181,24 +180,24 @@
                 <span class="resource-desc">globasa.net</span>
             </a>
             <a
-                href="https://globasa.net/gramati"
+                href="https://xwexi.globasa.net/eng/gramati"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="resource-card"
             >
                 <span class="resource-icon">📚</span>
                 <span class="resource-name">Grammar Guide</span>
-                <span class="resource-desc">Complete reference</span>
+                <span class="resource-desc">Xwexi Wiki</span>
             </a>
             <a
-                href="https://globasa.net/lexi"
+                href="https://menalari.globasa.net/eng/"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="resource-card"
             >
-                <span class="resource-icon">�</span>
+                <span class="resource-icon">📖</span>
                 <span class="resource-name">Dictionary</span>
-                <span class="resource-desc">Word lookup</span>
+                <span class="resource-desc">Menalari</span>
             </a>
             <a
                 href="https://discord.gg/globasa"
@@ -250,6 +249,19 @@
         font-size: var(--font-size-sm);
         color: var(--color-primary-400);
         margin-bottom: var(--space-4);
+    }
+
+    .flag-container {
+        margin-bottom: var(--space-6);
+        display: flex;
+        justify-content: center;
+    }
+
+    .hero-flag {
+        height: 60px;
+        width: auto;
+        border-radius: var(--radius-md);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .hero-title {

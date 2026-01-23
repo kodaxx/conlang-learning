@@ -1,5 +1,6 @@
 <script>
     import { browser } from "$app/environment";
+    import globasaFlag from "$lib/assets/globasa_flag.svg";
     import { onMount, tick } from "svelte";
 
     let { data } = $props();
@@ -93,9 +94,13 @@
 
 <div class="track-container">
     <header class="track-header">
-        <a href="/" class="back-link">← Back</a>
+        <!-- <a href="/" class="back-link">← Back</a> -->
         <div class="track-title">
-            <span class="track-icon">{info.icon}</span>
+            {#if data.language === "globasa"}
+                <img src={globasaFlag} alt="Globasa Flag" class="track-flag" />
+            {:else}
+                <span class="track-icon">{info.icon}</span>
+            {/if}
             <h1>{info.name}</h1>
         </div>
         <p class="track-description">{data.curriculum.description}</p>
@@ -439,6 +444,13 @@
 
     .track-icon {
         font-size: 3rem;
+    }
+
+    .track-flag {
+        height: 60px;
+        width: auto;
+        border-radius: var(--radius-md);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .track-title h1 {
