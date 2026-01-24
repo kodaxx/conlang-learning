@@ -33,6 +33,33 @@
     let selection = $state(null);
     let userPairs = $state(new Map());
 
+    const pairColors = [
+        "#f97316", // Orange
+        "#eab308", // Yellow
+        "#06b6d4", // Cyan
+        "#3b82f6", // Blue
+        "#a855f7", // Purple
+        "#ec4899", // Pink
+        "#6366f1", // Indigo
+        "#8b5cf6", // Violet
+    ];
+
+    function getPairColor(card) {
+        if (!userPairs) return null;
+
+        let pairIndex = -1;
+        if (card.col === "left") {
+            const keys = Array.from(userPairs.keys());
+            pairIndex = keys.indexOf(card.id);
+        } else {
+            const entries = Array.from(userPairs.entries());
+            pairIndex = entries.findIndex(([k, v]) => v === card.id);
+        }
+
+        if (pairIndex === -1) return null;
+        return pairColors[pairIndex % pairColors.length];
+    }
+
     $effect(() => {
         // Reset state when exercise changes
         if (exercise) {
@@ -509,6 +536,7 @@
                                             (r) =>
                                                 r.id === userPairs.get(card.id),
                                         )?.pairId !== card.pairId}
+                                    style:--pair-color={getPairColor(card)}
                                     onclick={() => handleCardClick(card)}
                                     disabled={showFeedback}
                                 >
@@ -558,6 +586,7 @@
                                                 left.pairId !== card.pairId
                                             );
                                         })()}
+                                    style:--pair-color={getPairColor(card)}
                                     onclick={() => handleCardClick(card)}
                                     disabled={showFeedback}
                                 >
@@ -928,8 +957,13 @@
     }
 
     .match-card.connected {
-        background: var(--color-bg-tertiary);
-        border-color: var(--color-primary);
+        background: color-mix(
+            in srgb,
+            var(--pair-color, var(--color-primary)) 15%,
+            transparent
+        );
+        border-color: var(--pair-color, var(--color-primary));
+        color: var(--color-text); /* Keep text readable */
     }
 
     .match-card.correct {

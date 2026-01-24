@@ -19,6 +19,33 @@
     let selection = $state(null);
     let userPairs = $state(new Map());
 
+    const pairColors = [
+        "#f97316", // Orange
+        "#eab308", // Yellow
+        "#06b6d4", // Cyan
+        "#3b82f6", // Blue
+        "#a855f7", // Purple
+        "#ec4899", // Pink
+        "#6366f1", // Indigo
+        "#8b5cf6", // Violet
+    ];
+
+    function getPairColor(card) {
+        if (!userPairs) return null;
+
+        let pairIndex = -1;
+        if (card.col === "left") {
+            const keys = Array.from(userPairs.keys());
+            pairIndex = keys.indexOf(card.id);
+        } else {
+            const entries = Array.from(userPairs.entries());
+            pairIndex = entries.findIndex(([k, v]) => v === card.id);
+        }
+
+        if (pairIndex === -1) return null;
+        return pairColors[pairIndex % pairColors.length];
+    }
+
     const exercise = $derived(data.exercises[currentExerciseIndex]);
     const progress = $derived(
         ((currentExerciseIndex + 1) / data.exercises.length) * 100,
@@ -337,6 +364,7 @@ I<svelte:head>
                                     rightCards.find(
                                         (r) => r.id === userPairs.get(card.id),
                                     )?.pairId !== card.pairId}
+                                style:--pair-color={getPairColor(card)}
                                 onclick={() => handleCardClick(card)}
                                 disabled={showFeedback}
                             >
@@ -379,6 +407,7 @@ I<svelte:head>
                                             left && left.pairId !== card.pairId
                                         );
                                     })()}
+                                style:--pair-color={getPairColor(card)}
                                 onclick={() => handleCardClick(card)}
                                 disabled={showFeedback}
                             >
@@ -700,8 +729,13 @@ I<svelte:head>
     }
 
     .match-card.connected {
-        background: var(--color-bg-tertiary);
-        border-color: var(--color-primary);
+        background: color-mix(
+            in srgb,
+            var(--pair-color, var(--color-primary)) 15%,
+            transparent
+        );
+        border-color: var(--pair-color, var(--color-primary));
+        color: var(--color-text);
     }
 
     .match-card.correct {
@@ -738,9 +772,5 @@ I<svelte:head>
         }
     }
 
-    @media (max-width: 480px) {
-        .matching-columns {
-            grid-template-columns: 1fr;
-        }
-    }
+    /* Removed single-column override for mobile based on user feedback */
 </style>

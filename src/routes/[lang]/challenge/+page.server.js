@@ -14,7 +14,7 @@ const curricula = {
     globasa: globasaCurriculum
 };
 
-export function load({ params }) {
+export function load({ params, locals }) {
     const curriculum = curricula[params.lang];
 
     if (!curriculum) {
@@ -22,12 +22,14 @@ export function load({ params }) {
     }
 
     // Get lesson progress from database
-    const lessonProgress = getAllProgress(params.lang);
+    const lessonProgress = getAllProgress(params.lang, locals.userId);
+    console.log(`[Challenge Debug] Lang: ${params.lang}, User: ${locals.userId}, Progress Count: ${lessonProgress.length}`);
 
     // Get completed lesson IDs from progress
     const completedLessonIds = lessonProgress
         .filter(p => p.completed)
         .map(p => p.lesson_id);
+    console.log(`[Challenge Debug] Completed IDs:`, completedLessonIds);
 
     // Collect exercises from completed lessons
     const allExercises = [];
