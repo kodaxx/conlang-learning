@@ -1,6 +1,7 @@
 <script>
     import { goto, invalidateAll } from "$app/navigation";
     import { sound } from "$lib/utils/sound";
+    import { isTranslationCorrect } from "$lib/utils/answerEvaluation";
 
     let { data } = $props();
 
@@ -27,11 +28,23 @@
     const exercise = $derived(data.lesson.exercises[currentExerciseIndex]);
 
     let currentWords = $state([]);
+    let shuffledOptions = $state([]);
     // Matching game state
     let leftCards = $state([]);
     let rightCards = $state([]);
     let selection = $state(null);
     let userPairs = $state(new Map());
+
+    // Hint state
+    let hintVisible = $state(false);
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
 
     const pairColors = [
         "#f97316", // Orange
@@ -60,14 +73,61 @@
         return pairColors[pairIndex % pairColors.length];
     }
 
+    // Reset state when exercise changes
     $effect(() => {
-        // Reset state when exercise changes
         if (exercise) {
-            if (exercise.type === "word-bank" && exercise.words) {
-                // Shuffle words for word bank
-                currentWords = [...exercise.words].sort(
-                    () => Math.random() - 0.5,
+            // Reset hint visibility
+            hintVisible = false;
+
+            console.log("Exercise loaded:", exercise.type);
+            if (exercise.type === "multiple-choice" && exercise.options) {
+                shuffledOptions = shuffleArray([...exercise.options]);
+            } else if (exercise.type === "word-bank" && exercise.words) {
+                // Collect potential distractors from lesson vocabulary
+                let potentialDistractors = [];
+                if (data.lesson.vocabulary) {
+                    potentialDistractors = [
+                        ...potentialDistractors,
+                        ...data.lesson.vocabulary.map((v) => v.word),
+                    ];
+                }
+                if (data.lesson.reviewVocabulary) {
+                    potentialDistractors = [
+                        ...potentialDistractors,
+                        ...data.lesson.reviewVocabulary,
+                    ];
+                }
+
+                // Filter out words that are already in the exercise or correct answer
+                const usedWords = new Set([
+                    ...exercise.words,
+                    ...(exercise.correctAnswer || []),
+                ]);
+                potentialDistractors = potentialDistractors.filter(
+                    (w) => !usedWords.has(w),
                 );
+
+                // Select 1-2 random distractors
+                const numDistractors = Math.min(
+                    potentialDistractors.length,
+                    Math.floor(Math.random() * 2) + 1,
+                );
+                const distractors = [];
+
+                for (let i = 0; i < numDistractors; i++) {
+                    const randomIndex = Math.floor(
+                        Math.random() * potentialDistractors.length,
+                    );
+                    distractors.push(potentialDistractors[randomIndex]);
+                    // Remove collected word to avoid duplicates
+                    potentialDistractors.splice(randomIndex, 1);
+                }
+
+                // Shuffle words for word bank including distractors
+                currentWords = shuffleArray([
+                    ...exercise.words,
+                    ...distractors,
+                ]);
             } else if (exercise.type === "matching" && exercise.pairs) {
                 // Setup matching game - separate columns
                 selection = null;
@@ -87,8 +147,8 @@
                     col: "right",
                 }));
 
-                leftCards = left.sort(() => Math.random() - 0.5);
-                rightCards = right.sort(() => Math.random() - 0.5);
+                leftCards = shuffleArray(left);
+                rightCards = shuffleArray(right);
             }
         }
     });
@@ -179,10 +239,7 @@
         if (ex.type === "multiple-choice" || ex.type === "fill-blank") {
             correct = selectedAnswer === ex.correctAnswer;
         } else if (ex.type === "translation") {
-            const userAnswer = translationInput.trim().toLowerCase();
-            correct = ex.correctAnswers.some(
-                (ans) => ans.toLowerCase() === userAnswer,
-            );
+            correct = isTranslationCorrect(translationInput, ex.correctAnswers);
         } else if (ex.type === "word-bank") {
             const userWords = wordBankSelection.map((item) => item.word);
             correct =
@@ -210,6 +267,12 @@
 
         if (correct) {
             sound.play("success");
+            // Auto continue after short delay
+            setTimeout(() => {
+                if (showFeedback && isCorrect) {
+                    nextExercise();
+                }
+            }, 1500);
         } else {
             sound.play("error");
             mistakes++;
@@ -277,7 +340,14 @@
         await invalidateAll();
         goto(`/${data.language}`);
     }
+    function handleGlobalKeydown(e) {
+        if (e.key === "Enter" && showFeedback && !isCorrect) {
+            nextExercise();
+        }
+    }
 </script>
+
+<svelte:window onkeydown={handleGlobalKeydown} />
 
 <svelte:head>
     <title>{data.lesson.name} | LinguaQuest</title>
@@ -420,7 +490,7 @@
                 {#if exercise.type === "multiple-choice"}
                     <h2 class="exercise-prompt">{exercise.prompt}</h2>
                     <div class="options-list">
-                        {#each exercise.options as option}
+                        {#each shuffledOptions as option}
                             <button
                                 class="option-btn"
                                 class:selected={selectedAnswer === option}
@@ -454,7 +524,17 @@
                             checkAnswer()}
                     />
                     {#if exercise.hint}
-                        <p class="exercise-hint">💡 {exercise.hint}</p>
+                        <button
+                            class="exercise-hint-btn"
+                            class:revealed={hintVisible}
+                            onclick={() => (hintVisible = true)}
+                        >
+                            {#if hintVisible}
+                                💡 {exercise.hint}
+                            {:else}
+                                💡 Tap to reveal hint
+                            {/if}
+                        </button>
                     {/if}
                 {:else if exercise.type === "fill-blank"}
                     <h2 class="exercise-prompt">{exercise.prompt}</h2>
@@ -635,7 +715,7 @@
                             ? "Continue"
                             : "Finish"}
                     </button>
-                {:else}
+                {:else if !showFeedback}
                     <button
                         class="btn btn-success btn-lg"
                         onclick={checkAnswer}
@@ -1007,5 +1087,32 @@
         60% {
             transform: translate3d(4px, 0, 0);
         }
+    }
+    .exercise-hint-btn {
+        background: none;
+        border: none;
+        color: var(--color-primary);
+        font-size: var(--font-size-md);
+        margin-top: var(--space-4);
+        cursor: pointer;
+        padding: var(--space-2) var(--space-4);
+        border-radius: var(--radius-full);
+        transition: background var(--transition-fast);
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+    }
+
+    .exercise-hint-btn:hover {
+        background: var(--color-bg-secondary);
+    }
+
+    .exercise-hint-btn.revealed {
+        cursor: default;
+        color: var(--color-text-secondary);
+    }
+
+    .exercise-hint-btn.revealed:hover {
+        background: none;
     }
 </style>

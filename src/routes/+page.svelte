@@ -200,7 +200,7 @@
                 <span class="resource-desc">Menalari</span>
             </a>
             <a
-                href="https://discord.gg/globasa"
+                href="https://discord.gg/JCaqAvapGR"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="resource-card"
